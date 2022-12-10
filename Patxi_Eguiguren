@@ -1,0 +1,144 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+
+G=6.67*10**-11
+Rsol=6.957*10**8 
+Msol=1.989*10**30 
+n_i=[0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0]
+
+for i in n_i:
+    
+#Condiciones iniciales
+    
+    xi=0.0
+    theta=1.0
+    delta_theta=0.0
+    xi_valores=[]
+    theta_valores=[]
+    delta_theta_valores=[]
+    step=0.0001
+    
+# Aplicamos el método de Euler hasta que theta<0. Aplicamos xi<40 porque 
+# n=5 diverge.    
+    
+    while (theta>=0) and (xi < 40):
+    
+        xi_valores.append(xi)
+        theta_valores.append(theta)
+        delta_theta_valores.append(delta_theta)
+        
+        xi_nuevo=xi+step
+        delta_theta_nuevo=delta_theta-step*((theta**i)+(2/xi_nuevo)*
+                                            delta_theta)
+        theta_nuevo=theta+step*delta_theta_nuevo
+        
+        delta_theta=delta_theta_nuevo
+        theta=theta_nuevo
+        xi=xi_nuevo
+        
+  #Cálculo de las constantes politrópicas      
+    xi_1=xi
+    R_n=xi_1
+    D_n=(-delta_theta*3/xi_1)**-1
+    M_n=-xi_1**2*delta_theta
+    
+#Para B0 existe una divergencia en n=0
+    if (i==0):
+        i=0.01
+        a=(3*D_n)**((3-i)/(3*i)) 
+        b= ((i+1)*M_n**((i-1)/i)*R_n**((3-i)/i))
+        B_n=a/b
+        i=0
+        
+    else:
+        B_n=(3*D_n)**((3-i)/(3*i)) / ((i+1)*M_n**((i-1)/i)*R_n**((3-i)/i))
+             
+    print('----------------------------------------------')
+    print(f'Para el índice {i}')
+    print('D_n='+ str(D_n))
+    print('R_n='+ str(R_n))
+    print('M_n='+ str(M_n))
+    print('B_n='+ str(B_n))
+    
+
+#Calculos para las enanas blancas
+    
+    if (i==1.5):
+        #Primero calculamos K:
+            K1p=1.0*10**7 #(m^4 kg^-2/3 s^-2)
+            K=K1p/2.0**(5.0/3)
+            
+        #Densidad central 10^9
+            pc=1.0*10**9                                                                     
+            alpha=np.sqrt((i+1)*K / (4*np.pi*G*pc**((i-1)/i)))
+            R1=alpha *xi_1
+            M1=-4*np.pi * alpha**3 * pc * xi_1**2 * delta_theta    
+            print('Pc=10^9 (kg/m^3), R=',round(R1/Rsol,3),'(Rsol)', '; M=', 
+                  round(M1/Msol,3),'(Msol)')
+                
+            densidad1=pc*np.array(theta_valores)**i
+            radio1=alpha*np.array(xi_valores)
+            plt.figure(2)
+            masa1=-4*np.pi*alpha**3*pc*np.array(xi_valores)**2*\
+            np.array(delta_theta_valores)
+            plt.figure(4)
+            plt.plot(radio1/Rsol,np.log10(densidad1),ls='-.',
+                     label=r'$\rho_c=1·10^{9} kg·m^{-3}$')
+            plt.figure(3)
+            plt.plot(radio1/Rsol,masa1/Msol,ls='-.',
+                     label=r'$\rho_c=1·10^{9} kg·m^{-3}$')
+            
+
+        #Densidad central 5·10^9
+            pc=5.0*10**9                                                                     
+            alpha=np.sqrt((i+1)*K / (4*np.pi*G*pc**((i-1)/i)))
+            R1=alpha *xi_1
+            M1=-4*np.pi * alpha**3 * pc * xi_1**2 * delta_theta    
+            print('Pc=5·10^9 (kg/m^3), R= ',round(R1/Rsol,3),'(Rsol)', '; M=' 
+                  ,round(M1/Msol,3),'(Msol)') 
+            densidad2=pc*np.array(theta_valores)**i
+            radio2=alpha*np.array(xi_valores)
+            masa2=-4*np.pi*alpha**3*pc*np.array(xi_valores)**2*\
+            np.array(delta_theta_valores)
+            
+            
+            plt.figure(4)
+            plt.plot(radio2/Rsol,np.log10(densidad2), 
+                     label=r'$\rho_c=5·10^{9} kg·m^{-3}$')
+            plt.figure(3)
+            plt.plot(radio2/Rsol,masa2/Msol, ls='-', 
+                     label=r'$\rho_c=5·10^{9} kg·m^{-3}$')
+            plt.minorticks_on()
+            
+            plt.rcParams['axes.facecolor'] = 'white'
+            plt.rcParams['axes.edgecolor'] = 'black'
+            plt.rcParams['axes.grid'] = True
+            plt.rcParams['grid.alpha'] = 0.4
+            plt.rcParams['grid.color'] = "black"
+                
+            
+            plt.legend(fontsize=12)
+            
+            plt.xlabel(r'$r/Rsol$', size=10)
+            plt.ylabel(r'$log\rho$',size=10)
+            plt.title(r'$Log\rho$ respecto a r/Rsol',size=14) 
+            
+            
+            plt.xlabel(r'$r/Rsol$', size=10)
+            plt.ylabel(r'$m / Msol$',size=10)
+            plt.title('m/Msol respecto a r/Rsol',size=15)
+            plt.show(2)
+        
+        
+    plt.figure(1)
+    plt.plot(xi_valores,theta_valores,label=f'n={i}')
+    plt.xlabel('\u03BE', size=13)
+    plt.ylabel('\u03B8(\u03BE)', size=13)
+    plt.title('Soluciones a la ecuación de Lane-Emden para diferentes n',
+              size=10)
+    plt.ylim(-0.0,1.1)
+    plt.legend(fontsize='small')
+    
+    
